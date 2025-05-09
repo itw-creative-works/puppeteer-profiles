@@ -8,14 +8,10 @@ function PuppeteerHelpers(parent, page) {
   // Set page
   self.page = page;
 
-  // Get dimensions from config if available
-  const width = (parent && parent.config && parent.config.width) || 300;
-  const height = (parent && parent.config && parent.config.height) || 300;
-
   // Track last mouse position (initialized to random within config bounds)
   self.mousePosition = {
-    x: Math.floor(Math.random() * width),
-    y: Math.floor(Math.random() * height),
+    x: Math.floor(Math.random() * parent?.config?.width),
+    y: Math.floor(Math.random() * parent?.config?.height),
   };
 
   self.debug = false;

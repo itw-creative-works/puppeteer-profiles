@@ -15,7 +15,6 @@ function PuppeteerProfiles() {
 
   // Set defaults
   self.config = {};
-  self.options = {};
 
   // Set properties
   self.installations = [];
@@ -28,7 +27,7 @@ function PuppeteerProfiles() {
 }
 
 // Initialize
-PuppeteerProfiles.prototype.initialize = function (config, options) {
+PuppeteerProfiles.prototype.initialize = function (config) {
   const self = this;
 
   return new Promise(async function(resolve, reject) {
@@ -43,7 +42,7 @@ PuppeteerProfiles.prototype.initialize = function (config, options) {
       config.profile = config.profile || 'Default';
       config.width = config.width || 1280;
       config.height = config.height || 1280;
-      self.config = config;
+      config.puppeteerOptions = config.puppeteerOptions || {};
 
       // Get installations
       self.installations = await self.getInstallations();
@@ -51,18 +50,19 @@ PuppeteerProfiles.prototype.initialize = function (config, options) {
       // Copy user profile
       const { userDataDir, profilePath } = copyUserProfile(config.profile);
 
-      // Set defaults
-      options = options || {};
-      options.executablePath = options.executablePath || self.installations[0];
-      // options.userDataDir = options.userDataDir || getUserDataDir();
-      options.userDataDir = userDataDir;
-      options.headless = typeof options.headless === 'undefined' ? false : options.headless;
-      options.args = options.args || [];
-      options.ignoreDefaultArgs = options.ignoreDefaultArgs || [];
-      options.defaultViewport = null;
+      // Set puppeteer options
+      const puppeteerOptions = config.puppeteerOptions;
+      puppeteerOptions.executablePath = puppeteerOptions.executablePath || self.installations[0];
+      // puppeteerOptions.userDataDir = puppeteerOptions.userDataDir || getUserDataDir();
+      puppeteerOptions.userDataDir = userDataDir;
+      puppeteerOptions.headless = typeof puppeteerOptions.headless === 'undefined' ? false : puppeteerOptions.headless;
+      puppeteerOptions.args = puppeteerOptions.args || [];
+      puppeteerOptions.ignoreDefaultArgs = puppeteerOptions.ignoreDefaultArgs || [];
+      puppeteerOptions.defaultViewport = null;
+      puppeteerOptions.protocolTimeout = puppeteerOptions.protocolTimeout || 60000;
 
       // Set args
-      options.args.push(
+      puppeteerOptions.args.push(
         // '--disable-blink-features=AutomationControlled',
         '--disable-infobars',
         // '--disable-extensions',
@@ -80,7 +80,7 @@ PuppeteerProfiles.prototype.initialize = function (config, options) {
       );
 
       // Set ignoreDefaultArgs
-      options.ignoreDefaultArgs.push(
+      puppeteerOptions.ignoreDefaultArgs.push(
         '--enable-automation',
         '--disable-extensions',
         '--disable-default-apps',
@@ -120,7 +120,7 @@ PuppeteerProfiles.prototype.initialize = function (config, options) {
       // clearChromeLock(config.profile)
 
       // Launch
-      self.browser = await puppeteer.launch(options)
+      self.browser = await puppeteer.launch(puppeteerOptions)
       .catch((e) => {
         // Log error
         console.error('⚠️⚠️⚠️ Is there an existing Chrome instance running?');
@@ -135,9 +135,6 @@ PuppeteerProfiles.prototype.initialize = function (config, options) {
       // Set initialized
       self.initialized = true;
 
-      // Set options
-      self.options = options;
-
       // Return
       return resolve(self.browser);
     } catch (e) {
@@ -145,7 +142,6 @@ PuppeteerProfiles.prototype.initialize = function (config, options) {
     }
   });
 }
-
 // Page
 PuppeteerProfiles.prototype.page = function (options) {
   const self = this;
