@@ -17,7 +17,37 @@ function PuppeteerHelpers(parent, page) {
     x: Math.floor(Math.random() * width),
     y: Math.floor(Math.random() * height),
   };
+
+  self.debug = false;
+
+  // Log
+  // console.log('---111 B', parent, page);
+
+  // Bind methods to this instance
+  for (let key of Object.getOwnPropertyNames(PuppeteerHelpers.prototype)) {
+    if (typeof this[key] === 'function' && key !== 'constructor') {
+      this[key] = this[key].bind(this);
+    }
+  }
+
+  // Return
+  return self;
 }
+
+// Set debug mode
+PuppeteerHelpers.prototype.setDebug = function (debug) {
+  const self = this;
+
+  // Set debug mode
+  self.debug = debug;
+
+  // Log
+  if (debug) {
+    console.log('Debug mode enabled');
+  } else {
+    console.log('Debug mode disabled');
+  }
+};
 
 // Bezier helper
 PuppeteerHelpers.prototype._bezier = function (p0, p1, p2, p3, t) {
@@ -232,18 +262,93 @@ PuppeteerHelpers.prototype.move = async function (selector, options) {
     };
 
     // Inject a visible cursor if debug is enabled
-    if (options.debug) {
+    if (self.debug) {
       await self._injectDebugCursor();
     }
 
     // HERE ME MUST HUMANLY MOVE THE MOUSE
-    await self._humanMouseMove(self.mousePosition, target, options.debug);
+    await self._humanMouseMove(self.mousePosition, target, self.debug);
   } else {
     throw new Error(`Element not found: ${selector}`);
   }
 };
 
 // Click fn
+// PuppeteerHelpers.prototype.click = async function (selector, options) {
+//   const self = this;
+
+//   // Fix options
+//   options = options || {};
+//   options.timeout = typeof options.timeout === 'undefined' ? 10000 : options.timeout;
+//   options.minPredelay = typeof options.minPredelay === 'undefined' ? 500 : options.minPredelay;
+//   options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 1000 : options.maxPredelay;
+//   options.minDelay = typeof options.minDelay === 'undefined' ? 40 : options.minDelay;
+//   options.maxDelay = typeof options.maxDelay === 'undefined' ? 120 : options.maxDelay;
+
+//   // Log
+//   if (options.log) {
+//     console.log(options.log);
+//   }
+
+//   // Wait for the selector to be visible
+//   await self.page.waitForSelector(selector, { visible: true, timeout: options.timeout });
+
+//   // Calculate predelay
+//   const predelay = random(options.minPredelay, options.maxPredelay, { mode: 'gaussian' });
+//   const delay = random(options.minDelay, options.maxDelay, { mode: 'gaussian' });
+
+//   // Wait before clicking
+//   await wait(predelay);
+
+//   // Determine if cursor is currently over the correct element
+//   const isOverTarget = await self.page.evaluate(({ x, y, selector }) => {
+//     const elAtPoint = document.elementFromPoint(x, y);
+//     const expectedEl = document.querySelector(selector);
+//     return elAtPoint === expectedEl || expectedEl?.contains(elAtPoint);
+//   }, {
+//     x: self.mousePosition.x,
+//     y: self.mousePosition.y,
+//     selector
+//   });
+
+//   // Perform click
+//   if (isOverTarget) {
+//     // Log
+//     if (options.log) {
+//       console.log(`Clicking at coordiates ${self.mousePosition.x}, ${self.mousePosition.y} (delay=${delay})`);
+//     }
+
+//     // Move to position and manually click
+//     await self.page.mouse.move(self.mousePosition.x, self.mousePosition.y);
+//     await self.page.mouse.down(); // Mouse down
+//     await self.wait(delay); // Wait between down and up
+//     await self.page.mouse.up(); // Mouse up
+//   } else {
+//     const element = await self.page.$(selector);
+//     if (element) {
+//       // Log
+//       if (options.log) {
+//         console.log(`Clicking at element ${selector} (delay=${delay})`);
+//       }
+
+//       // Get element position
+//       const box = await element.boundingBox();
+//       if (!box) throw new Error(`Could not get bounding box for: ${selector}`);
+
+//       const x = box.x + box.width / 2;
+//       const y = box.y + box.height / 2;
+
+//       // Move to position and manually click
+//       await self.page.mouse.move(x, y);
+//       await self.page.mouse.down(); // Mouse down
+//       await self.wait(delay); // Wait between down and up
+//       await self.page.mouse.up(); // Mouse up
+//     } else {
+//       throw new Error(`Element not found: ${selector}`);
+//     }
+//   }
+// };
+
 PuppeteerHelpers.prototype.click = async function (selector, options) {
   const self = this;
 
@@ -254,14 +359,24 @@ PuppeteerHelpers.prototype.click = async function (selector, options) {
   options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 1000 : options.maxPredelay;
   options.minDelay = typeof options.minDelay === 'undefined' ? 40 : options.minDelay;
   options.maxDelay = typeof options.maxDelay === 'undefined' ? 120 : options.maxDelay;
+  options.move = typeof options.move === 'undefined' ? true : options.move;
 
   // Log
   if (options.log) {
     console.log(options.log);
   }
 
-  // Wait for the selector to be visible
-  await self.page.waitForSelector(selector, { visible: true, timeout: options.timeout });
+  // Move to element if specified
+  if (options.move) {
+    await self.move(selector, {
+      timeout: options.timeout,
+      minPredelay: options.minPredelay,
+      maxPredelay: options.maxPredelay,
+    });
+  } else {
+    // Wait for the selector to be visible
+    await self.page.waitForSelector(selector, { visible: true, timeout: options.timeout });
+  }
 
   // Calculate predelay
   const predelay = random(options.minPredelay, options.maxPredelay, { mode: 'gaussian' });
@@ -270,53 +385,16 @@ PuppeteerHelpers.prototype.click = async function (selector, options) {
   // Wait before clicking
   await wait(predelay);
 
-  // Determine if cursor is currently over the correct element
-  const isOverTarget = await self.page.evaluate(({ x, y, selector }) => {
-    const elAtPoint = document.elementFromPoint(x, y);
-    const expectedEl = document.querySelector(selector);
-    return elAtPoint === expectedEl || expectedEl?.contains(elAtPoint);
-  }, {
-    x: self.mousePosition.x,
-    y: self.mousePosition.y,
-    selector
-  });
-
-  // Perform click
-  if (isOverTarget) {
-    // Log
-    if (options.log) {
-      console.log(`Clicking at coordiates ${self.mousePosition.x}, ${self.mousePosition.y} (delay=${delay})`);
-    }
-
-    // Move to position and manually click
-    await self.page.mouse.move(self.mousePosition.x, self.mousePosition.y);
-    await self.page.mouse.down(); // Mouse down
-    await self.wait(delay); // Wait between down and up
-    await self.page.mouse.up(); // Mouse up
-  } else {
-    const element = await self.page.$(selector);
-    if (element) {
-      // Log
-      if (options.log) {
-        console.log(`Clicking at element ${selector} (delay=${delay})`);
-      }
-
-      // Get element position
-      const box = await element.boundingBox();
-      if (!box) throw new Error(`Could not get bounding box for: ${selector}`);
-
-      const x = box.x + box.width / 2;
-      const y = box.y + box.height / 2;
-
-      // Move to position and manually click
-      await self.page.mouse.move(x, y);
-      await self.page.mouse.down(); // Mouse down
-      await self.wait(delay); // Wait between down and up
-      await self.page.mouse.up(); // Mouse up
-    } else {
-      throw new Error(`Element not found: ${selector}`);
-    }
+  // Log
+  if (options.log) {
+    console.log(`Clicking at coordiates ${self.mousePosition.x}, ${self.mousePosition.y} (delay=${delay})`);
   }
+
+  // Move to position and manually click
+  await self.page.mouse.move(self.mousePosition.x, self.mousePosition.y);
+  await self.page.mouse.down(); // Mouse down
+  await self.wait(delay); // Wait between down and up
+  await self.page.mouse.up(); // Mouse up
 };
 
 PuppeteerHelpers.prototype.type = async function (text, options) {

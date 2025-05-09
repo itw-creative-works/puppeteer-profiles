@@ -79,6 +79,8 @@ const page = await browserManager.page();
 
 ### .tools.move(selector, options)
 Move the mouse to a specific element on the page. The mouse moves in a **human-like** way, with a random delay between each step. The mouse will end at a slightly offcenter position of the element calculated by **gaussian distribution**.
+
+If you want to click something, just use `click`, which will automatically move the mouse to the element before clicking.
 ### options
 - `minPredelay` (number) - Minimum delay before the move begins (default: `500`)
 - `maxPredelay` (number) - Maximum delay before the move begins (default: `1000`)
@@ -89,12 +91,16 @@ await page.tools.move('button#submit');
 
 ### .tools.click(selector, options)
 Click on a specific element on the page. The click is performed in a **human-like** way, with a random delay between each step. If you use `move` before `click`, the click will happen at the X and Y coordinates at the end of the `move`.
+
+If move is not use, the click will happen at the current mouse position.
 ### options
 - `minPredelay` (number) - Minimum delay before the click begins (default: `500`)
 - `maxPredelay` (number) - Maximum delay before the click begins (default: `1000`)
+- `minDelay` (number) - Minimum delay between clicks (default: `40`)
+- `maxDelay` (number) - Maximum delay between clicks (default: `120`)
+- `move` (boolean) - Whether to move the mouse to the element before clicking (default: `true`)
 ```js
 await page.goto('https://example.com');
-await page.tools.move('button#submit');
 await page.tools.click('button#submit');
 ```
 
@@ -105,7 +111,6 @@ Type text into a specific element on the page. The typing is performed in a **hu
 - `maxDelay` (number) - Maximum delay between keystrokes (default: `120`)
 ```js
 await page.goto('https://example.com');
-await page.tools.move('input#username');
 await page.tools.click('input#username');
 await page.tools.type('myusername');
 ```
@@ -118,10 +123,19 @@ Press a key on the keyboard. You can supply a `quantity` to press the key multip
 - `quantity` (number) - Number of times to press the key (default: `1`)
 ```js
 await page.goto('https://example.com');
-await page.tools.move('input#username');
 await page.tools.click('input#username');
 await page.tools.type('myusername');
 await page.tools.press('Enter');
+```
+
+### .tools.setDebug(debug)
+Set the debug mode for the tools library. This will show a visual representation of the mouse movements and clicks on the page. This is useful for debugging and testing the library.
+### options
+- `debug` (boolean) - Whether to show the debug mode (default: `false`)
+```js
+await page.goto('https://example.com');
+await page.tools.setDebug(true);
+await page.tools.click('input#username');
 ```
 
 ## 📘 Using Puppeteer Profiles
