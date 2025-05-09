@@ -55,7 +55,7 @@ PuppeteerProfiles.prototype.initialize = function (config) {
       puppeteerOptions.executablePath = puppeteerOptions.executablePath || self.installations[0];
       // puppeteerOptions.userDataDir = puppeteerOptions.userDataDir || getUserDataDir();
       puppeteerOptions.userDataDir = userDataDir;
-      puppeteerOptions.headless = typeof puppeteerOptions.headless === 'undefined' ? false : puppeteerOptions.headless;
+      puppeteerOptions.headless = typeof puppeteerOptions.headless === 'undefined' ? true : puppeteerOptions.headless;
       puppeteerOptions.args = puppeteerOptions.args || [];
       puppeteerOptions.ignoreDefaultArgs = puppeteerOptions.ignoreDefaultArgs || [];
       puppeteerOptions.defaultViewport = null;

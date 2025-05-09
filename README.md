@@ -44,6 +44,9 @@ await browserManager.initialize({
   profile: 'Default',
   width: 1280,
   height: 800,
+  puppeteerOptions: {
+    headless: false,
+  },
 });
 
 // Basic usage
@@ -57,15 +60,18 @@ Initialize the browser with a copied Chrome user profile.
 #### config (Custom Config)
 - `profile` (string) - Name of Chrome profile to load (e.g., `"Default"`)
 - `width`, `height` (number) - Window size (default: `1280x1280`)
-#### options (Puppeteer Launch Options)
-- `executablePath` (string) - Custom Chrome path
-- `headless` (boolean) - Launch in headless mode (default: `false`)
-- `args` (array) - Additional Chromium launch args
+- `puppeteerOptions` (object) - Puppeteer launch options
+  - `executablePath` (string) - Custom Chrome path
+  - `headless` (boolean) - Launch in headless mode (default: `false`)
+  - `args` (array) - Additional Chromium launch args
 ```js
 await browserManager.initialize({
   profile: 'Default',
   width: 1280,
   height: 800,
+  puppeteerOptions: {
+    headless: false,
+  },
 });
 ```
 
