@@ -133,15 +133,15 @@ PuppeteerHelpers.prototype._humanMouseMove = async function (from, to, debug) {
 
       await self.page.mouse.move(pos.x, pos.y);
 
-      if (debug) {
-        await self.page.evaluate(({ x, y }) => {
-          const cursor = document.querySelector('#debug-cursor');
-          if (cursor) {
-            cursor.style.left = x + 'px';
-            cursor.style.top = y + 'px';
-          }
-        }, pos);
-      }
+      // if (debug) {
+      //   await self.page.evaluate(({ x, y }) => {
+      //     const cursor = document.querySelector('#debug-cursor');
+      //     if (cursor) {
+      //       cursor.style.left = `${x - 10}px`;
+      //       cursor.style.top = `${y - 10}px`;
+      //     }
+      //   }, pos);
+      // }
 
       await wait(delay);
     }
@@ -157,15 +157,15 @@ PuppeteerHelpers.prototype._humanMouseMove = async function (from, to, debug) {
 
         await self.page.mouse.move(x, y);
 
-        if (debug) {
-          await self.page.evaluate(({ x, y }) => {
-            const cursor = document.querySelector('#debug-cursor');
-            if (cursor) {
-              cursor.style.left = x + 'px';
-              cursor.style.top = y + 'px';
-            }
-          }, { x, y });
-        }
+        // if (debug) {
+        //   await self.page.evaluate(({ x, y }) => {
+        //     const cursor = document.querySelector('#debug-cursor');
+        //     if (cursor) {
+        //       cursor.style.left = `${x - 10}px`;
+        //       cursor.style.top = `${y - 10}px`;
+        //     }
+        //   }, { x, y });
+        // }
 
         await wait(CORRECTION_DELAY_MIN + Math.random() * (CORRECTION_DELAY_MAX - CORRECTION_DELAY_MIN));
       }
@@ -188,6 +188,7 @@ PuppeteerHelpers.prototype._injectDebugCursor = async function () {
   await self.page.evaluate(() => {
     if (document.getElementById('debug-cursor')) return;
 
+    // Create cursor crosshair
     const cursor = document.createElement('div');
     cursor.id = 'debug-cursor';
     cursor.style.position = 'fixed';
@@ -198,7 +199,7 @@ PuppeteerHelpers.prototype._injectDebugCursor = async function () {
     cursor.style.left = '0px';
     cursor.style.top = '0px';
 
-    // Create horizontal bar
+    // Create horizontal and vertical bars
     const hBar = document.createElement('div');
     hBar.style.position = 'absolute';
     hBar.style.top = '50%';
@@ -218,9 +219,57 @@ PuppeteerHelpers.prototype._injectDebugCursor = async function () {
     vBar.style.background = 'red';
     vBar.style.transform = 'translateX(-50%)';
 
+    // Append bars to cursor
     cursor.appendChild(hBar);
     cursor.appendChild(vBar);
     document.body.appendChild(cursor);
+
+    // Create a trail container
+    const trailContainer = document.createElement('div');
+    trailContainer.id = 'debug-cursor-trail';
+    trailContainer.style.position = 'fixed';
+    trailContainer.style.top = '0';
+    trailContainer.style.left = '0';
+    trailContainer.style.width = '100vw';
+    trailContainer.style.height = '100vh';
+    trailContainer.style.pointerEvents = 'none';
+    trailContainer.style.zIndex = '999998';
+    document.body.appendChild(trailContainer);
+
+    // Handle movement and spawn trail points
+    document.addEventListener('mousemove', function(e) {
+      const cursor = document.getElementById('debug-cursor');
+      const trail = document.getElementById('debug-cursor-trail');
+
+      if (cursor) {
+        cursor.style.left = `${e.clientX - 10}px`;
+        cursor.style.top = `${e.clientY - 10}px`;
+      }
+
+      if (trail) {
+        const dot = document.createElement('div');
+        dot.style.position = 'fixed';
+        dot.style.left = `${e.clientX - 2}px`;
+        dot.style.top = `${e.clientY - 2}px`;
+        dot.style.width = '4px';
+        dot.style.height = '4px';
+        dot.style.borderRadius = '50%';
+        dot.style.background = 'rgba(255, 0, 0, 0.8)';
+        dot.style.pointerEvents = 'none';
+        dot.style.zIndex = '999998';
+        dot.style.transition = 'opacity 0.3s ease-out';
+        trail.appendChild(dot);
+
+        setTimeout(function() {
+          dot.style.opacity = '0';
+          setTimeout(function() {
+            if (dot.parentElement === trail) {
+              trail.removeChild(dot);
+            }
+          }, 300);
+        }, 0);
+      }
+    });
   });
 };
 
