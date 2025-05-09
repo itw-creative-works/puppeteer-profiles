@@ -24,17 +24,11 @@
   <strong>puppeteer-profiles</strong> is the official npm module of <a href="https://itwcreativeworks.com">Puppeteer Profiles</a>, a free app for Use your cookies, logins, and more with Puppeteer.
 </p>
 
-## 🌐 Puppeteer Profiles Works in Node AND browser environments
-Yes, this module works in both Node and browser environments, including compatibility with [Webpack](https://www.npmjs.com/package/webpack) and [Browserify](https://www.npmjs.com/package/browserify)!
-
 ## 🦄 Features
 * Use your cookies, logins, and more with Puppeteer
 
-## 🔑 Getting an API key
-You can use so much of `puppeteer-profiles` for free, but if you want to do some advanced stuff, you'll need an API key. You can get one by [signing up for a Puppeteer Profiles account](https://itwcreativeworks.com/signup).
-
 ## 📦 Install Puppeteer Profiles
-### Option 1: Install via npm
+### Install via npm
 Install with npm if you plan to use `puppeteer-profiles` in a Node project or in the browser.
 ```shell
 npm install puppeteer-profiles
@@ -42,36 +36,92 @@ npm install puppeteer-profiles
 If you plan to use `puppeteer-profiles` in a browser environment, you will probably need to use [Webpack](https://www.npmjs.com/package/webpack), [Browserify](https://www.npmjs.com/package/browserify), or a similar service to compile it.
 
 ```js
-const puppeteerProfiles = new (require('puppeteer-profiles'))({
-  // Not required, but having one removes limits (get your key at https://itwcreativeworks.com).
-  apiKey: 'api_test_key'
+const PuppeteerProfiles = require('puppeteer-profiles');
+const puppeteerProfiles = new PuppeteerProfiles();
+
+// Create a new browser manager
+await browserManager.initialize({
+  profile: 'Default',
+  width: 1280,
+  height: 800,
 });
-```
 
-### Option 2: Install via CDN
-Install with CDN if you plan to use Puppeteer Profiles only in a browser environment.
-```html
-<script src="https://cdn.jsdelivr.net/npm/puppeteer-profiles@latest/dist/index.min.js"></script>
-<script type="text/javascript">
-  var puppeteerProfiles = new Puppeteer({
-    // Not required, but having one removes limits (get your key at https://itwcreativeworks.com).
-    apiKey: 'api_test_Key'
-  });
-</script>
-```
-
-### Option 3: Use without installation
-You can use `puppeteer-profiles` in a variety of ways that require no installation, such as `curl` in terminal/shell.
-
-```shell
-# Standard
-curl -X POST https://api.itwcreativeworks.com
+// Basic usage
+const page = await browserManager.page();
+await page.goto('https://example.com');
 ```
 
 ## ⚡️ Usage
-### puppeteerProfiles.run(options)
+### .initialize(config, options)
+Initialize the browser with a copied Chrome user profile.
+#### config (Custom Config)
+- `profile` (string) - Name of Chrome profile to load (e.g., `"Default"`)
+- `width`, `height` (number) - Window size (default: `1280x1280`)
+#### options (Puppeteer Launch Options)
+- `executablePath` (string) - Custom Chrome path
+- `headless` (boolean) - Launch in headless mode (default: `false`)
+- `args` (array) - Additional Chromium launch args
 ```js
-puppeteerProfiles.run(options);
+await browserManager.initialize({
+  profile: 'Default',
+  width: 1280,
+  height: 800,
+});
+```
+
+### .page()
+Create a new page in the browser that is an instance of the Puppeteer page class.
+
+This method attaches our special `tools` library to the page, which allows you to use the advanced features of **Puppeteer Profiles**.
+```js
+const page = await browserManager.page();
+```
+
+### .tools.move(selector, options)
+Move the mouse to a specific element on the page. The mouse moves in a **human-like** way, with a random delay between each step. The mouse will end at a slightly offcenter position of the element calculated by **gaussian distribution**.
+### options
+- `minPredelay` (number) - Minimum delay before the move begins (default: `500`)
+- `maxPredelay` (number) - Maximum delay before the move begins (default: `1000`)
+```js
+await page.goto('https://example.com');
+await page.tools.move('button#submit');
+```
+
+### .tools.click(selector, options)
+Click on a specific element on the page. The click is performed in a **human-like** way, with a random delay between each step. If you use `move` before `click`, the click will happen at the X and Y coordinates at the end of the `move`.
+### options
+- `minPredelay` (number) - Minimum delay before the click begins (default: `500`)
+- `maxPredelay` (number) - Maximum delay before the click begins (default: `1000`)
+```js
+await page.goto('https://example.com');
+await page.tools.move('button#submit');
+await page.tools.click('button#submit');
+```
+
+### .tools.type(text, options)
+Type text into a specific element on the page. The typing is performed in a **human-like** way, with a random delay between each keystroke. The text is typed at the X and Y coordinates of the element calculated by **gaussian distribution**.
+### options
+- `minDelay` (number) - Minimum delay between keystrokes (default: `40`)
+- `maxDelay` (number) - Maximum delay between keystrokes (default: `120`)
+```js
+await page.goto('https://example.com');
+await page.tools.move('input#username');
+await page.tools.click('input#username');
+await page.tools.type('myusername');
+```
+
+### .tools.press(button, options)
+Press a key on the keyboard. You can supply a `quantity` to press the key multiple times.
+### options
+- `minDelay` (number) - Minimum delay between keystrokes (default: `40`)
+- `maxDelay` (number) - Maximum delay between keystrokes (default: `120`)
+- `quantity` (number) - Number of times to press the key (default: `1`)
+```js
+await page.goto('https://example.com');
+await page.tools.move('input#username');
+await page.tools.click('input#username');
+await page.tools.type('myusername');
+await page.tools.press('Enter');
 ```
 
 ## 📘 Using Puppeteer Profiles

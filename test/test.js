@@ -4,6 +4,8 @@ const assert = require('assert');
 const PuppeteerProfiles = require('../dist/index.js'); // your PuppeteerProfiles class
 const wait = require('node-powertools').wait;
 
+const TEST_URL = 'https://output.jsbin.com/meqemequbo';
+
 let browserManager;
 let page;
 
@@ -13,8 +15,6 @@ before(async function () {
   browserManager = new PuppeteerProfiles();
   await browserManager.initialize({
     profile: 'Default',
-    width: 1280,
-    height: 720
   });
 
   page = await browserManager.page();
@@ -37,8 +37,8 @@ describe(`${package.name}`, () => {
 
     it('should navigate and click all nodes using tools.move', async () => {
       // Go to test page
-      await page.goto('https://output.jsbin.com/cefalixiqe', { waitUntil: 'networkidle2' });
-      await wait(1000, 1500);
+      await page.goto(TEST_URL, { waitUntil: 'networkidle2' });
+      await wait(1000, 1500, { log: true});
 
       // Ensure nodes are present
       const nodeHandles = await page.$$('[data-node]');
@@ -52,14 +52,17 @@ describe(`${package.name}`, () => {
         await page.tools.move(selector, {
           log: `Moving to node ${i}`,
           timeout: 10000,
-          minDelay: 300,
-          maxDelay: 600
+          debug: true,
         });
 
         // Click node
-        const el = await page.$(selector);
-        assert(el, `Element not found for selector ${selector}`);
-        await el.click();
+        await page.tools.click(selector, {
+          log: `Clicking node ${i}`,
+          timeout: 10000,
+          minDelay: 50,
+          maxDelay: 140,
+          debug: true,
+        });
       }
 
       // Final check

@@ -42,7 +42,6 @@
   "dependencies": {
     "chrome-launcher": "^0.15.2",
     "fs-jetpack": "^5.1.0",
-    "ghost-cursor": "^1.4.1",
     "itwcw-package-analytics": "^1.0.6",
     "node-powertools": "^2.2.0"
   },
