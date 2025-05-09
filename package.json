@@ -1,8 +1,7 @@
 {
-  "TODO": "__module_domain, __module_name, __asset_file_name, __module_owner, __module_title, __module_class_name, __module_instance_name, __module_description, __module_feature",
-  "name": "__module_name",
+  "name": "puppeteer-profiles",
   "version": "0.0.1",
-  "description": "__module_description",
+  "description": "Puppeteer but with your actual chrome profile!",
   "main": "./dist/index.js",
   "scripts": {
     "start": "node ./dist/index.js",
@@ -29,22 +28,29 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/__module_owner/__module_name"
+    "url": "git+https://github.com/itw-creative-works/puppeteer-profiles"
   },
   "keywords": [
-    "__module_name"
+    "puppeteer-profiles"
   ],
   "author": "ITW Creative Works",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/__module_owner/__module_name/issues"
+    "url": "https://github.com/itw-creative-works/puppeteer-profiles/issues"
   },
-  "homepage": "https://__module_domain",
+  "homepage": "https://itwcreativeworks.com",
   "dependencies": {
-    "itwcw-package-analytics": "^1.0.6"
+    "chrome-launcher": "^0.15.2",
+    "fs-jetpack": "^5.1.0",
+    "ghost-cursor": "^1.4.1",
+    "itwcw-package-analytics": "^1.0.6",
+    "node-powertools": "^2.2.0"
   },
   "devDependencies": {
     "mocha": "^8.4.0",
     "prepare-package": "^1.1.14"
+  },
+  "peerDependencies": {
+    "puppeteer-core": "^24.8.0"
   }
 }
