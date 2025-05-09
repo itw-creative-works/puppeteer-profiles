@@ -59,6 +59,7 @@ PuppeteerProfiles.prototype.initialize = function (config, options) {
       options.headless = typeof options.headless === 'undefined' ? false : options.headless;
       options.args = options.args || [];
       options.ignoreDefaultArgs = options.ignoreDefaultArgs || [];
+      options.defaultViewport = null;
 
       // Set args
       options.args.push(
@@ -75,6 +76,7 @@ PuppeteerProfiles.prototype.initialize = function (config, options) {
         // `--profile-directory=${config.profile}`,
         `--profile-directory=${profilePath}`,
         `--window-size=${config.width},${config.height}`,
+        '--start-maximized',
       );
 
       // Set ignoreDefaultArgs
@@ -159,10 +161,10 @@ PuppeteerProfiles.prototype.page = function (options) {
       const page = await self.browser.newPage();
 
       // Set full viewport size
-      await page.setViewport({
-        width: self.config.width,
-        height: self.config.height,
-      })
+      // await page.setViewport({
+      //   width: self.config.width,
+      //   height: self.config.height,
+      // })
 
       // Modify the navigator.webdriver to bypass detection
       await page.evaluateOnNewDocument(() => {
