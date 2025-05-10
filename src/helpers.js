@@ -14,10 +14,8 @@ function PuppeteerHelpers(parent, page) {
     y: Math.floor(Math.random() * parent?.config?.height),
   };
 
+  // Set debug mode
   self.debug = false;
-
-  // Log
-  // console.log('---111 B', parent, page);
 
   // Bind methods to this instance
   for (let key of Object.getOwnPropertyNames(PuppeteerHelpers.prototype)) {
@@ -181,10 +179,12 @@ PuppeteerHelpers.prototype._humanMouseMove = async function (from, to, debug) {
 PuppeteerHelpers.prototype._injectDebugCursor = async function () {
   const self = this;
 
-  await self.page.evaluate(() => {
+  const TRAIL_FADE_DURATION = 2000; // milliseconds
+  const TRAIL_DOT_FREQUENCY = 10;   // minimum ms between dots
+
+  await self.page.evaluate((TRAIL_FADE_DURATION, TRAIL_DOT_FREQUENCY) => {
     if (document.getElementById('debug-cursor')) return;
 
-    // Create cursor crosshair
     const cursor = document.createElement('div');
     cursor.id = 'debug-cursor';
     cursor.style.position = 'fixed';
@@ -195,7 +195,6 @@ PuppeteerHelpers.prototype._injectDebugCursor = async function () {
     cursor.style.left = '0px';
     cursor.style.top = '0px';
 
-    // Create horizontal and vertical bars
     const hBar = document.createElement('div');
     hBar.style.position = 'absolute';
     hBar.style.top = '50%';
@@ -205,7 +204,6 @@ PuppeteerHelpers.prototype._injectDebugCursor = async function () {
     hBar.style.background = 'red';
     hBar.style.transform = 'translateY(-50%)';
 
-    // Create vertical bar
     const vBar = document.createElement('div');
     vBar.style.position = 'absolute';
     vBar.style.left = '50%';
@@ -215,12 +213,10 @@ PuppeteerHelpers.prototype._injectDebugCursor = async function () {
     vBar.style.background = 'red';
     vBar.style.transform = 'translateX(-50%)';
 
-    // Append bars to cursor
     cursor.appendChild(hBar);
     cursor.appendChild(vBar);
     document.body.appendChild(cursor);
 
-    // Create a trail container
     const trailContainer = document.createElement('div');
     trailContainer.id = 'debug-cursor-trail';
     trailContainer.style.position = 'fixed';
@@ -232,8 +228,13 @@ PuppeteerHelpers.prototype._injectDebugCursor = async function () {
     trailContainer.style.zIndex = '999998';
     document.body.appendChild(trailContainer);
 
-    // Handle movement and spawn trail points
+    let lastTime = 0;
+
     document.addEventListener('mousemove', function(e) {
+      const now = Date.now();
+      if (now - lastTime < TRAIL_DOT_FREQUENCY) return;
+      lastTime = now;
+
       const cursor = document.getElementById('debug-cursor');
       const trail = document.getElementById('debug-cursor-trail');
 
@@ -253,7 +254,7 @@ PuppeteerHelpers.prototype._injectDebugCursor = async function () {
         dot.style.background = 'rgba(255, 0, 0, 0.8)';
         dot.style.pointerEvents = 'none';
         dot.style.zIndex = '999998';
-        dot.style.transition = 'opacity 0.3s ease-out';
+        dot.style.transition = `opacity ${TRAIL_FADE_DURATION}ms ease-out`;
         trail.appendChild(dot);
 
         setTimeout(function() {
@@ -262,11 +263,11 @@ PuppeteerHelpers.prototype._injectDebugCursor = async function () {
             if (dot.parentElement === trail) {
               trail.removeChild(dot);
             }
-          }, 300);
+          }, TRAIL_FADE_DURATION);
         }, 0);
       }
     });
-  });
+  }, TRAIL_FADE_DURATION, TRAIL_DOT_FREQUENCY);
 };
 
 // Move mouse to element

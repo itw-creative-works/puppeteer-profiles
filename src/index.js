@@ -134,6 +134,7 @@ PuppeteerProfiles.prototype.initialize = function (config) {
 
       // Set initialized
       self.initialized = true;
+      self.config = config;
 
       // Return
       return resolve(self.browser);
