@@ -4,7 +4,7 @@ const assert = require('assert');
 const PuppeteerProfiles = require('../dist/index.js'); // your PuppeteerProfiles class
 const wait = require('node-powertools').wait;
 
-const TEST_URL = 'https://somiibo.com/puppeteer-test';
+const TEST_URL = 'https://itwcreativeworks.com/test/puppeteer-profiles';
 const TIMEOUT = 60000 * 2;
 
 let browserManager;
