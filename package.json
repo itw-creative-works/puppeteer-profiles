@@ -1,6 +1,6 @@
 {
   "name": "puppeteer-profiles",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Puppeteer but with your actual chrome profile!",
   "main": "./dist/index.js",
   "scripts": {
