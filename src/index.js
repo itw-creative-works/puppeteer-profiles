@@ -77,6 +77,10 @@ PuppeteerProfiles.prototype.initialize = function (config) {
         `--profile-directory=${profilePath}`,
         `--window-size=${config.width},${config.height}`,
         '--start-maximized',
+        '--disable-breakpad', // Disable crash reporting
+        '--no-first-run',
+        '--no-default-browser-check',
+        '--disable-restore-session-state'
       );
 
       // Set ignoreDefaultArgs
@@ -261,12 +265,14 @@ function copyUserProfile(profileName) {
       '!SingletonLock',
       '!lockfile',
       '!**/Crashpad/**',
+      '!**/Crash Reports/**', // Exclude crash reports
       '!**/BrowserMetrics/**',
       '!**/Cache/**',
       '!**/Code Cache/**',
       '!**/GPUCache/**',
       '!**/ShaderCache/**',
-      '!**/Service Worker/CacheStorage/**'
+      '!**/Service Worker/CacheStorage/**',
+      '!**/Sessions/**',
     ]
   })
 
