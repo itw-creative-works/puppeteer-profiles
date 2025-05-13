@@ -48,7 +48,7 @@ PuppeteerProfiles.prototype.initialize = function (config) {
       self.installations = await self.getInstallations();
 
       // Copy user profile
-      const { userDataDir, profilePath } = copyUserProfile(config.profile);
+      const { userDataDir, profilePath } = copyUserProfile(config);
 
       // Set puppeteer options
       const puppeteerOptions = config.puppeteerOptions;
@@ -234,7 +234,7 @@ PuppeteerProfiles.prototype.getInstallations = function () {
   });
 }
 
-function copyUserProfile(profileName) {
+function copyUserProfile(config) {
   // Get username and platform-specific Chrome user data directory
   const username = os.userInfo().username
   const baseDir = {
@@ -244,9 +244,9 @@ function copyUserProfile(profileName) {
   }[process.platform]
 
   // Resolve paths
-  const sourceProfilePath = path.join(baseDir, profileName)
+  const sourceProfilePath = path.join(baseDir, config.profile)
   const tempBase = path.join(os.tmpdir(), 'Puppeteer')
-  const destProfilePath = path.join(tempBase, profileName)
+  const destProfilePath = path.join(tempBase, config.profile)
 
   // Log
   console.log('Copying Chrome profile from:', sourceProfilePath);
@@ -260,7 +260,7 @@ function copyUserProfile(profileName) {
   // Copy profile with filtering
   jetpack.copy(sourceProfilePath, destProfilePath, {
     overwrite: true,
-    matching: [
+    matching: config._userProfileFiles || [
       '**',
       '!SingletonLock',
       '!lockfile',
@@ -280,7 +280,7 @@ function copyUserProfile(profileName) {
   console.log('Copied Chrome profile to:', destProfilePath);
 
   // Return
-  return { userDataDir: tempBase, profilePath: profileName }
+  return { userDataDir: tempBase, profilePath: config.profile }
 }
 
 // Export
