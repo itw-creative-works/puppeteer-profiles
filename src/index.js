@@ -37,11 +37,25 @@ PuppeteerProfiles.prototype.initialize = function (config) {
         return resolve(self.browser);
       }
 
-      // config
+      // Set defaults
       config = config || {};
+
+      // Set profile options
       config.profile = config.profile || 'Default';
+      config.useSourcePath = typeof config.useSourcePath === 'undefined'
+        ? false
+        : config.useSourcePath;
+      config._userProfileFiles = config._userProfileFiles;
       config.width = config.width || 1280;
       config.height = config.height || 1280;
+
+      // Set flags
+      config.flags = config.flags || {};
+      config.flags.disableEncryption = typeof config.flags.disableEncryption === 'undefined'
+        ? false
+        : config.flags.disableEncryption;
+
+      // Set puppeteer options
       config.puppeteerOptions = config.puppeteerOptions || {};
 
       // Get installations
@@ -82,6 +96,11 @@ PuppeteerProfiles.prototype.initialize = function (config) {
         '--no-default-browser-check',
         '--disable-restore-session-state'
       );
+
+      // If config.flags.disableEncryption is set, add the flag
+      if (config.flags.disableEncryption) {
+        puppeteerOptions.args.push('--disable-encryption');
+      }
 
       // Set ignoreDefaultArgs
       puppeteerOptions.ignoreDefaultArgs.push(
@@ -242,6 +261,11 @@ function copyUserProfile(config) {
     linux: `/home/${username}/.config/google-chrome`,
     win32: `C:\\Users\\${username}\\AppData\\Local\\Google\\Chrome\\User Data`
   }[process.platform]
+
+  // If config.useSourcePath is set, use it
+  if (config.useSourcePath) {
+    return { userDataDir: baseDir, profilePath: config.profile }
+  }
 
   // Resolve paths
   const sourceProfilePath = path.join(baseDir, config.profile)
