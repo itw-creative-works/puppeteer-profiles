@@ -277,8 +277,8 @@ PuppeteerHelpers.prototype.move = async function (selector, options) {
   // Fix options
   options = options || {};
   options.timeout = typeof options.timeout === 'undefined' ? 10000 : options.timeout;
-  options.minPredelay = typeof options.minPredelay === 'undefined' ? 500 : options.minPredelay;
-  options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 1000 : options.maxPredelay;
+  options.minPredelay = typeof options.minPredelay === 'undefined' ? 80 : options.minPredelay;
+  options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 350 : options.maxPredelay;
 
   // const RANDOM_MIN = 0.3;
   // const RANDOM_MAX = 0.7;
@@ -326,8 +326,8 @@ PuppeteerHelpers.prototype.move = async function (selector, options) {
 //   // Fix options
 //   options = options || {};
 //   options.timeout = typeof options.timeout === 'undefined' ? 10000 : options.timeout;
-//   options.minPredelay = typeof options.minPredelay === 'undefined' ? 500 : options.minPredelay;
-//   options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 1000 : options.maxPredelay;
+//   options.minPredelay = typeof options.minPredelay === 'undefined' ? 80 : options.minPredelay;
+//   options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 350 : options.maxPredelay;
 //   options.minDelay = typeof options.minDelay === 'undefined' ? 40 : options.minDelay;
 //   options.maxDelay = typeof options.maxDelay === 'undefined' ? 120 : options.maxDelay;
 
@@ -401,8 +401,8 @@ PuppeteerHelpers.prototype.click = async function (selector, options) {
   // Fix options
   options = options || {};
   options.timeout = typeof options.timeout === 'undefined' ? 10000 : options.timeout;
-  options.minPredelay = typeof options.minPredelay === 'undefined' ? 500 : options.minPredelay;
-  options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 1000 : options.maxPredelay;
+  options.minPredelay = typeof options.minPredelay === 'undefined' ? 80 : options.minPredelay;
+  options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 350 : options.maxPredelay;
   options.minDelay = typeof options.minDelay === 'undefined' ? 40 : options.minDelay;
   options.maxDelay = typeof options.maxDelay === 'undefined' ? 120 : options.maxDelay;
   options.move = typeof options.move === 'undefined' ? true : options.move;
@@ -496,8 +496,8 @@ PuppeteerHelpers.prototype.scroll = async function (selector, options) {
 
   // Fix options
   options = options || {};
-  options.minPredelay = typeof options.minPredelay === 'undefined' ? 500 : options.minPredelay;
-  options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 1000 : options.maxPredelay;
+  options.minPredelay = typeof options.minPredelay === 'undefined' ? 80 : options.minPredelay;
+  options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 350 : options.maxPredelay;
 
   if (options.log) {
     console.log(options.log);
