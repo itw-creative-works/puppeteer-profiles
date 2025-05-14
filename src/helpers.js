@@ -510,9 +510,9 @@ PuppeteerHelpers.prototype.scroll = async function (selector, options) {
   await wait(predelay);
 
   // Scroll to the element if it's not in the viewport
-  const element = await page.$(selector);
+  const element = await self.page.$(selector);
   if (element) {
-    const isInViewport = await page.evaluate(el => {
+    const isInViewport = await self.page.evaluate(el => {
       const rect = el.getBoundingClientRect();
       return (
         rect.top >= 0 &&
@@ -523,7 +523,7 @@ PuppeteerHelpers.prototype.scroll = async function (selector, options) {
     }, element);
 
     if (!isInViewport) {
-      await page.evaluate(el => el.scrollIntoView(), element);
+      await self.page.evaluate(el => el.scrollIntoView(), element);
     }
   }
 }
