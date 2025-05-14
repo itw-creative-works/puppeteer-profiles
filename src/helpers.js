@@ -406,10 +406,20 @@ PuppeteerHelpers.prototype.click = async function (selector, options) {
   options.minDelay = typeof options.minDelay === 'undefined' ? 40 : options.minDelay;
   options.maxDelay = typeof options.maxDelay === 'undefined' ? 120 : options.maxDelay;
   options.move = typeof options.move === 'undefined' ? true : options.move;
+  options.scroll = typeof options.scroll === 'undefined' ? true : options.scroll;
 
   // Log
   if (options.log) {
     console.log(options.log);
+  }
+
+  // Scroll to the element if it's not in the viewport
+  if (options.scroll) {
+    await self.scroll(selector, {
+      timeout: options.timeout,
+      minPredelay: options.minPredelay,
+      maxPredelay: options.maxPredelay,
+    });
   }
 
   // Move to element if specified
@@ -477,6 +487,44 @@ PuppeteerHelpers.prototype.press = async function (key, options) {
   for (let i = 0; i < options.quantity; i++) {
     await self.page.keyboard.press(key);
     await wait(options.minDelay, options.maxDelay, { mode: 'gaussian' });
+  }
+}
+
+// Scroll
+PuppeteerHelpers.prototype.scroll = async function (selector, options) {
+  const self = this;
+
+  // Fix options
+  options = options || {};
+  options.minPredelay = typeof options.minPredelay === 'undefined' ? 500 : options.minPredelay;
+  options.maxPredelay = typeof options.maxPredelay === 'undefined' ? 1000 : options.maxPredelay;
+
+  if (options.log) {
+    console.log(options.log);
+  }
+
+  // Calculate predelay
+  const predelay = random(options.minPredelay, options.maxPredelay, { mode: 'gaussian' });
+
+  // Wait before clicking
+  await wait(predelay);
+
+  // Scroll to the element if it's not in the viewport
+  const element = await page.$(selector);
+  if (element) {
+    const isInViewport = await page.evaluate(el => {
+      const rect = el.getBoundingClientRect();
+      return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+      );
+    }, element);
+
+    if (!isInViewport) {
+      await page.evaluate(el => el.scrollIntoView(), element);
+    }
   }
 }
 
