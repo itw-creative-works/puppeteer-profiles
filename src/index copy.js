@@ -45,9 +45,6 @@ PuppeteerProfiles.prototype.initialize = function (config) {
       config.useSourcePath = typeof config.useSourcePath === 'undefined'
         ? false
         : config.useSourcePath;
-      config.copyUserDataDir = typeof config.copyUserDataDir === 'undefined'
-        ? true
-        : config.copyUserDataDir;
       config._userProfileFiles = config._userProfileFiles;
       config._remoteDebuggingPort = typeof config._remoteDebuggingPort === 'undefined'
         ? 9222
@@ -68,7 +65,7 @@ PuppeteerProfiles.prototype.initialize = function (config) {
       self.installations = await self.getInstallations();
 
       // Copy user profile
-      const { userDataDir, profilePath } = copyUserData(config);
+      const { userDataDir, profilePath } = copyUserProfile(config);
 
       // Set puppeteer options
       const puppeteerOptions = config.puppeteerOptions;
@@ -139,7 +136,7 @@ PuppeteerProfiles.prototype.initialize = function (config) {
       );
 
       // Log options
-      console.log(`Puppeteer.initialize() userDataDir=${puppeteerOptions.userDataDir}, profilePath=${profilePath}`);
+      console.log('Puppeteer.initialize()');
 
       // Kill existing Chrome instances
       // await self.killChrome()
@@ -260,63 +257,58 @@ PuppeteerProfiles.prototype.getInstallations = function () {
   });
 }
 
-// Fix: Copy entire Chrome "User Data" dir
-function copyUserData(config) {
-  const username = os.userInfo().username;
-  const sourceDir = {
+function copyUserProfile(config) {
+  // Get username and platform-specific Chrome user data directory
+  const username = os.userInfo().username
+  const baseDir = {
     darwin: `/Users/${username}/Library/Application Support/Google/Chrome`,
     linux: `/home/${username}/.config/google-chrome`,
     win32: `C:\\Users\\${username}\\AppData\\Local\\Google\\Chrome\\User Data`
-  }[process.platform];
+  }[process.platform]
 
-  // If using original source
+  // If config.useSourcePath is set, use it
   if (config.useSourcePath) {
-    return { userDataDir: sourceDir, profilePath: config.profile };
+    return { userDataDir: baseDir, profilePath: config.profile }
   }
+
+  // Resolve paths
+  const sourceProfilePath = path.join(baseDir, config.profile)
+  const tempBase = path.join(os.tmpdir(), 'Puppeteer')
+  const destProfilePath = path.join(tempBase, config.profile)
 
   // Log
-  console.log('Starting copy from', sourceDir);
+  console.log('Copying Chrome profile from:', sourceProfilePath);
 
-  // Clone whole user data dir
-  const destinationDir = path.join(os.tmpdir(), 'Puppeteer', 'User Data');
+  // Ensure temp directory exists
+  jetpack.dir(tempBase)
 
-  // Perform copy
-  if (config.copyUserDataDir) {
-    // Remove Existing destinationDir
-    jetpack.remove(destinationDir);
+  // Delete destination profile if it exists
+  jetpack.remove(destProfilePath)
 
-    //  Copy user data
-    jetpack.copy(sourceDir, destinationDir, {
-      overwrite: true,
-      // matching: config._userProfileFiles || ['**', '!SingletonLock']
-      matching: [
-        '**',
-        '!SingletonLock',
-        '!**/Default/**',
-        '!**/Profile */**',
-        // '!Default',
-        // '!Profile *', // Exclude any
-      ]
-    });
+  // Copy profile with filtering
+  jetpack.copy(sourceProfilePath, destProfilePath, {
+    overwrite: true,
+    matching: config._userProfileFiles || [
+      '**',
+      '!SingletonLock',
+      '!lockfile',
+      '!**/Crashpad/**',
+      '!**/Crash Reports/**', // Exclude crash reports
+      '!**/BrowserMetrics/**',
+      '!**/Cache/**',
+      '!**/Code Cache/**',
+      '!**/GPUCache/**',
+      '!**/ShaderCache/**',
+      '!**/Service Worker/CacheStorage/**',
+      '!**/Sessions/**',
+    ]
+  })
 
-    // Copy profile
-    const sourceProfilePath = path.join(sourceDir, config.profile);
-    const destProfilePath = path.join(destinationDir, config.profile);
-    jetpack.copy(sourceProfilePath, destProfilePath, {
-      overwrite: true,
-      matching: [
-        '**',
-        '!SingletonLock',
-      ]
-    });
+  // Log
+  console.log('Copied Chrome profile to:', destProfilePath);
 
-    // Log
-    console.log('Finished copy to', destinationDir);
-  } else {
-    // console.log('Finished copy to', destinationDir);
-  }
-
-  return { userDataDir: destinationDir, profilePath: config.profile };
+  // Return
+  return { userDataDir: tempBase, profilePath: config.profile }
 }
 
 // Export
