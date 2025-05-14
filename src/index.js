@@ -46,6 +46,7 @@ PuppeteerProfiles.prototype.initialize = function (config) {
         ? false
         : config.useSourcePath;
       config._userProfileFiles = config._userProfileFiles;
+      config._remoteDebuggingPort = config._remoteDebuggingPort || 9222;
       config.width = config.width || 1280;
       config.height = config.height || 1280;
 
@@ -85,7 +86,7 @@ PuppeteerProfiles.prototype.initialize = function (config) {
         // '--disable-dev-shm-usage',
         // '--no-sandbox',
         // '--disable-gpu',
-        '--remote-debugging-port=9222', // Optional for debugging
+        `--remote-debugging-port=${config._remoteDebuggingPort}`, // Optional for debugging
         // '--profile-directory=Default'
         // `--profile-directory=${config.profile}`,
         `--profile-directory=${profilePath}`,
@@ -166,6 +167,7 @@ PuppeteerProfiles.prototype.initialize = function (config) {
     }
   });
 }
+
 // Page
 PuppeteerProfiles.prototype.page = function (options) {
   const self = this;
