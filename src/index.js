@@ -37,7 +37,7 @@ function PuppeteerProfiles() {
   * https://github.com/rebrowser/rebrowser-patches
   * https://rebrowser.net/blog/how-to-fix-runtime-enable-cdp-detection-of-puppeteer-playwright-and-other-automation-libraries
   * https://deviceandbrowserinfo.com/learning_zone/articles/detecting-headless-chrome-puppeteer-2024
-  * https://github.com/ultrafunkamsterdam/nodriver
+  * https://github.com/ultrafunkamsterdam/nodrivernpu
 */
 
 // Initialize
