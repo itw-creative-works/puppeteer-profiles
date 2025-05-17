@@ -4,7 +4,8 @@ const path = require('path');
 const jetpack = require('fs-jetpack');
 const powertools = require('node-powertools');
 const chromeLauncher = require('chrome-launcher');
-const puppeteer = require('puppeteer-core');
+// const puppeteer = require('puppeteer-core');
+let puppeteer;
 
 // Helpers
 const Helpers = require('./helpers.js');
@@ -26,6 +27,19 @@ function PuppeteerProfiles() {
   return self;
 }
 
+/*
+  * BOT DETECTION WEBSITES
+  * https://www.browserscan.net/bot-detection
+  * https://bot-detector.rebrowser.net/
+  * https://bot.sannysoft.com/
+  *
+  * ENDED UP SWITCHING TO REBROWSER
+  * https://github.com/rebrowser/rebrowser-patches
+  * https://rebrowser.net/blog/how-to-fix-runtime-enable-cdp-detection-of-puppeteer-playwright-and-other-automation-libraries
+  * https://deviceandbrowserinfo.com/learning_zone/articles/detecting-headless-chrome-puppeteer-2024
+  * https://github.com/ultrafunkamsterdam/nodriver
+*/
+
 // Initialize
 PuppeteerProfiles.prototype.initialize = function (config) {
   const self = this;
@@ -39,6 +53,9 @@ PuppeteerProfiles.prototype.initialize = function (config) {
 
       // Set defaults
       config = config || {};
+
+      // Require puppeteer
+      puppeteer = config.puppeteer || require('rebrowser-puppeteer-core');
 
       // Set profile options
       config.profile = config.profile || 'Default';
@@ -89,6 +106,7 @@ PuppeteerProfiles.prototype.initialize = function (config) {
         // '--disable-default-apps',
         // '--disable-dev-shm-usage',
         // '--no-sandbox',
+        // '--disable-setuid-sandbox',
         // '--disable-gpu',
         `--remote-debugging-port=${config._remoteDebuggingPort}`, // Optional for debugging
         // '--profile-directory=Default'
@@ -99,7 +117,8 @@ PuppeteerProfiles.prototype.initialize = function (config) {
         '--disable-breakpad', // Disable crash reporting
         '--no-first-run',
         '--no-default-browser-check',
-        '--disable-restore-session-state'
+        '--disable-restore-session-state',
+        // '--auto-open-devtools-for-tabs',
       );
 
       // If config.flags.disableEncryption is set, add the flag
@@ -194,10 +213,69 @@ PuppeteerProfiles.prototype.page = function (options) {
 
       // Modify the navigator.webdriver to bypass detection
       await page.evaluateOnNewDocument(() => {
-        Object.defineProperty(navigator, 'webdriver', {
-          get: () => false,
-        });
+        // Fake navigator.webdriver
+        // Disabled because it seems to trigger detection when enabled
+        // Object.defineProperty(navigator, 'webdriver', {
+        //   get: () => false,
+        // });
+
+        // Remove debug trace identifiers
+        // const originalCall = console.debug;
+        // console.debug = function () {
+        //   if (arguments[0] && arguments[0].toString().includes('__puppeteer_evaluation_script__')) return
+        //   return originalCall.apply(this, arguments)
+        // }
+
+        // Patch Error.stack getter detection
+        // https://deviceandbrowserinfo.com/learning_zone/articles/detecting-headless-chrome-puppeteer-2024
+        // const originalDebug = console.debug;
+        // console.debug = function() {
+        //   // Avoid triggering the CDP test stack getter
+        //   for (let i = 0; i < arguments.length; i++) {
+        //     if (arguments[i] instanceof Error) {
+        //       continue;
+        //     }
+        //   }
+        //   return originalDebug.apply(this, arguments);
+        // };
+
+        // const originalDebug = console.debug
+        // console.debug = function () {
+        //   try {
+        //     const arg = arguments[0]
+        //     if (
+        //       arg instanceof Error &&
+        //       Object.prototype.hasOwnProperty.call(arg, 'stack')
+        //     ) {
+        //       const desc = Object.getOwnPropertyDescriptor(arg, 'stack')
+
+        //       // If it has a custom getter, override it before logging
+        //       if (desc && typeof desc.get === 'function') {
+        //         delete arg.stack
+        //         arg.stack = Error().stack
+        //       }
+        //     }
+        //   } catch (e) {
+        //     // fail silently
+        //   }
+
+        //   return originalDebug.apply(this, arguments)
+        // }
+
+        // const originalError = Error;
+        // function FakeError(...args) {
+        //   const err = new originalError(...args)
+        //   Object.defineProperty(err, 'stack', {
+        //     get: function () {
+        //       return originalError().stack
+        //     }
+        //   })
+        //   return err;
+        // }
+        // FakeError.prototype = originalError.prototype;
+        // window.Error = FakeError;
       });
+
 
       // Inject helpers
       page.tools = new Helpers(self, page);

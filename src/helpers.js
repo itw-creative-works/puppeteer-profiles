@@ -549,5 +549,50 @@ PuppeteerHelpers.prototype.wait = async function (min, max, options) {
   await wait(waitTime);
 }
 
+// Wait fn
+PuppeteerHelpers.prototype.isBrowserAutomated = async function (options) {
+  const self = this;
+
+  // Execute
+  const result = await self.page.evaluate((_options) => {
+    let isBrowserAutomated = false;
+    let cdpTestFailed = false;
+
+    // Fix options
+    const options = typeof _options === 'undefined' ? {} : _options;
+
+    // CDP test
+    (function() {
+      const e = new Error();
+
+      window.Object.defineProperty(e, 'stack', {
+        configurable: false,
+        enumerable: false,
+        get: function () {
+          cdpTestFailed = true;
+          return '';
+        }
+      });
+
+      // This is part of the test, leave it in!
+      window.console.debug(e);
+
+      // If CDP test failed, mark as automated
+      if (cdpTestFailed) {
+        isBrowserAutomated = true;
+      }
+    }());
+
+    // Return the result
+    return isBrowserAutomated;
+  }, options);
+
+  // Log
+  console.log('Browser automated test result:', result);
+
+  // Return result
+  return result;
+}
+
 // Export
 module.exports = PuppeteerHelpers;

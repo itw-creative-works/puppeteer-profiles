@@ -50,6 +50,6 @@
     "prepare-package": "^1.1.14"
   },
   "peerDependencies": {
-    "puppeteer-core": "^24.8.0"
+    "rebrowser-puppeteer-core": "24.8.1"
   }
 }
