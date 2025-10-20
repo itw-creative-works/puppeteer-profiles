@@ -58,7 +58,9 @@ PuppeteerProfiles.prototype.initialize = function (config) {
       puppeteer = config.puppeteer || require('rebrowser-puppeteer-core');
 
       // Set profile options
-      config.profile = config.profile || 'Default';
+      config.profile = typeof config.profile === 'undefined'
+        ? 'Default'
+        : config.profile;
       config.useSourcePath = typeof config.useSourcePath === 'undefined'
         ? false
         : config.useSourcePath;
@@ -84,13 +86,25 @@ PuppeteerProfiles.prototype.initialize = function (config) {
       // Get installations
       self.installations = await self.getInstallations();
 
-      // Copy user profile
-      const { userDataDir, profilePath } = copyUserData(config);
+      // Copy user profile (only if profile is not explicitly false)
+      let userDataDir = null;
+      let profilePath = null;
+
+      if (config.profile !== false) {
+        const profileData = copyUserData(config);
+        userDataDir = profileData.userDataDir;
+        profilePath = profileData.profilePath;
+      }
 
       // Set puppeteer options
       const puppeteerOptions = config.puppeteerOptions;
       puppeteerOptions.executablePath = puppeteerOptions.executablePath || self.installations[0];
-      puppeteerOptions.userDataDir = userDataDir;
+
+      // Only set userDataDir if profile is being used
+      if (userDataDir) {
+        puppeteerOptions.userDataDir = userDataDir;
+      }
+
       puppeteerOptions.headless = typeof puppeteerOptions.headless === 'undefined' ? true : puppeteerOptions.headless;
       puppeteerOptions.args = puppeteerOptions.args || [];
       puppeteerOptions.ignoreDefaultArgs = puppeteerOptions.ignoreDefaultArgs || [];
@@ -111,7 +125,6 @@ PuppeteerProfiles.prototype.initialize = function (config) {
         `--remote-debugging-port=${config._remoteDebuggingPort}`, // Optional for debugging
         // '--profile-directory=Default'
         // `--profile-directory=${config.profile}`,
-        `--profile-directory=${profilePath}`,
         `--window-size=${config.width},${config.height}`,
         '--start-maximized',
         '--disable-breakpad', // Disable crash reporting
@@ -120,6 +133,11 @@ PuppeteerProfiles.prototype.initialize = function (config) {
         '--disable-restore-session-state',
         // '--auto-open-devtools-for-tabs',
       );
+
+      // Only add profile-directory arg if profile is being used
+      if (profilePath) {
+        puppeteerOptions.args.push(`--profile-directory=${profilePath}`);
+      }
 
       // If config.flags.disableEncryption is set, add the flag
       if (config.flags.disableEncryption) {
