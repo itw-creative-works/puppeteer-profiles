@@ -37,10 +37,10 @@ If you plan to use `puppeteer-profiles` in a browser environment, you will proba
 
 ```js
 const PuppeteerProfiles = require('puppeteer-profiles');
-const puppeteerProfiles = new PuppeteerProfiles();
+const puppeteer = new PuppeteerProfiles();
 
 // Create a new browser manager
-await browserManager.initialize({
+await puppeteer.initialize({
   profile: 'Default',
   width: 1280,
   height: 800,
@@ -50,7 +50,7 @@ await browserManager.initialize({
 });
 
 // Basic usage
-const page = await browserManager.page();
+const page = await puppeteer.page();
 await page.goto('https://example.com');
 ```
 
@@ -65,7 +65,7 @@ Initialize the browser with a copied Chrome user profile.
   - `headless` (boolean) - Launch in headless mode (default: `false`)
   - `args` (array) - Additional Chromium launch args
 ```js
-await browserManager.initialize({
+await puppeteer.initialize({
   profile: 'Default',
   width: 1280,
   height: 800,
